@@ -6,8 +6,14 @@
     "content_scripts": [
         {
             "matches": ["https://race.netkeiba.com/*","https://nar.netkeiba.com/*" ],
-            "js": ["./lib/jquery-3.4.1.js","./ageweighttable.js","./makeTopPrizePointList.js","./getJockyShokin.js","./content_scripts.js"],
-            "css": ["content_scripts.css"]
+            "js": [
+                "./lib/jquery-3.4.1.js"
+                ,"./ageweighttable.js"
+                ,"./standard.js"
+                ,"./makeTopPrizePointList.js"
+                ,"./content_scripts.js"
+            ]
+            
         }
     ],
     "browser_action": {

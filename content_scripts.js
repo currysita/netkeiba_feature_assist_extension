@@ -1,11 +1,5 @@
-/// <reference path="./makeTopPrizePointList.js" />
-
-/**
- * タイム指数を取得する。Ajaxを呼び出して、その結果を関数にわたすだけ。
- */
-// var funcTimeScore = function(){
-
-// }
+/// <reference path="./ageweighttable.js" />
+/// <reference path="./standard.js" />
 
 /**
  * タイム指数を取る。
@@ -15,9 +9,8 @@ var funcTimeScore = function(rows){
     var logStr = "";
     //タイトル文字列生成
     logStr += "馬番\t名前\tタイム指数\tT(標準化)\n";
-    // rows = $('table.race_table_01 tr');
     if(rows.length == 0){
-        console.log("タイム指数の結果が取得できてないよ");
+        console.log("タイム指数の結果が取得できないよ");
         return;
     }
     var dataRows = rows.slice(2);
@@ -32,10 +25,6 @@ var funcTimeScore = function(rows){
         var speedTmp1 = $(tds[11]).text().trim();
         var speedTmp2 = $(tds[12]).text().trim();
         
-        // var speed1 = Number(speedTmp1.replace('*',''));
-        // if(!isNaN(speed1)){
-        //     speedList.push(speed1)
-        // }
         var speed2 = Number(speedTmp2.replace('*',''));
         if(!isNaN(speed2)){
             speedList.push(speed2)
@@ -53,53 +42,16 @@ var funcTimeScore = function(rows){
     $.each(dataRows, funcDataRow);
 
     
-    //標準化します。引数に馬番をキーとした値を入れる事
-    var funcStandard = function(targetTable){
-        var keys = Object.keys(targetTable);
-        var max = 0;
-        var min = 0;
-        var standardTable = {};
-        //最大値を作る
-        keys.forEach(key => {
-            var current = Number(targetTable[key]);
-            if(!isNaN(current)){
-                if(max < current){
-                    max = current;
-                }
-            }
-        });
-        //最小値を作る
-        min = max;
-        keys.forEach(key => {
-            var current = Number(targetTable[key]);
-            if(!isNaN(current)){
-                if(current < min){
-                    min = current;
-                }
-            }
-        });
-        keys.forEach(key => {
-            standardTable[key] = (targetTable[key] - min) / (max - min);
-        });
-        return standardTable;
-    }
     var keys = Object.keys(speedObjectLit);
     var umabanSpeedTable = {};
     keys.forEach(key => {
         umabanSpeedTable[key] = speedObjectLit[key].speed;
     });
-    var speedStandardTable = funcStandard(umabanSpeedTable);
+    var speedStandardTable = funcStandard1to2(umabanSpeedTable);
     keys.forEach(key => {
         var currentSpeed = speedStandardTable[key];
         speedObjectLit[key].SpeedStandard = currentSpeed;
     });
-
-    //文字列の生成
-    // keys.forEach(key => {
-    //     var oneSpeed = speedObjectLit[key];
-    //     logStr += oneSpeed.umaban + "\t" + oneSpeed.umaName + "\t" + oneSpeed.speed + "\t" + oneSpeed.SpeedStandard + "\n";
-    // });
-    // console.log(logStr);
 
     //馬番とタイム指数のオブジェクトにする
     var timeScoreTable = {};
@@ -409,71 +361,8 @@ var makeUmahashiraData = function(){
     //データの生成 標準偏差など全体のデータの作成は、これより後にしてください
     $.each(dataRows,funcDataRow);
     
-    // //分散、標準偏差を生成
+    //馬番の配列を取得
     var keys = Object.keys(winPointTable);
-    //標準化します。引数に馬番をキーとした値を入れる事
-    //最小値を0として、
-    var funcStandardZeroToOne = function(targetTable){
-        var keys = Object.keys(targetTable);
-        var max = null;
-        var min = null;
-        var standardTable = {};
-        //最大値を作る
-        keys.forEach(key => {
-            var current = Number(targetTable[key]);
-            if(!isNaN(current)){
-                if(max === null || max < current){
-                    max = current;
-                }
-            }
-        });
-        //最小値を作る
-        min = max;
-        keys.forEach(key => {
-            var current = Number(targetTable[key]);
-            if(!isNaN(current)){
-                if(min === null || current < min){
-                    min = current;
-                }
-            }
-        });
-        keys.forEach(key => {
-            if(isNaN(targetTable[key])){
-                standardTable[key] = 0;
-            }else{
-                standardTable[key] = (targetTable[key] - min) / (max - min);
-            }
-        });
-        return standardTable;
-    }
-
-    //標準化します。引数に馬番をキーとした値を入れる事
-    //0を基準中心としたマイナスを含む
-    var funcStandardNormal1 = function(targetTable){
-        var keys = Object.keys(targetTable);
-        var avg = 0;
-        var sum = 0;
-        //合計値と平均値を作る
-        sum = funcSum(targetTable);
-        avg = sum / keys.length;
-        //分散
-        var bunsan = 0;
-        var bunsanTmp = 0;
-        keys.forEach(key => {
-            var current = Number(targetTable[key]);
-            bunsanTmp += (current - avg) ** 2;
-        });
-        bunsan = bunsanTmp / keys.length;
-        //標準偏差を取得し、標準化する
-        var std = Math.sqrt(bunsan);
-        var stdTable = {};
-        keys.forEach(key => {
-            var current = Number(targetTable[key]);
-            stdTable[key] = ((current - avg) / std);
-        });
-
-        return stdTable;
-    }
 
     //年齢Pを標準化します
     var agePointTable = {};
@@ -481,7 +370,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         agePointTable[key] = oneWinPoint.agePoint;
     });
-    var agePointStandardTable = funcStandardZeroToOne(agePointTable);
+    var agePointStandardTable = funcStandard1to2(agePointTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var agePointStandard = agePointStandardTable[key];
@@ -489,13 +378,14 @@ var makeUmahashiraData = function(){
             agePointStandard = 0;
         oneWinPoint["agePointStandard"] = agePointStandard.toFixed(2);
     });
+
     //ハロンを標準化します
     var haronTable = {};
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         haronTable[key] = Number(oneWinPoint.haron) * -1; //低いほど強いので、マイナスの値にする
     });
-    var haronStandardTable = funcStandardZeroToOne(haronTable);
+    var haronStandardTable = funcStandard1to2(haronTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var haronStandard = haronStandardTable[key];
@@ -539,9 +429,9 @@ var makeUmahashiraData = function(){
                 oneWinPoint["oddsRank"] = oneOddsRank;
             }
         });
-
     }
-    var oddsTableForStd = {};//オッズランクの正規化のためのテーブル
+    //オッズランクの正規化のためのテーブル
+    var oddsTableForStd = {};
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         if(!isNaN(oneWinPoint.oddsRank)){
@@ -549,7 +439,7 @@ var makeUmahashiraData = function(){
         }
     });
 
-    var oddsRankStdTable = funcStandardZeroToOne(oddsTableForStd);
+    var oddsRankStdTable = funcStandard1to2(oddsTableForStd);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var oddsRankStd = oddsRankStdTable[key];
@@ -566,27 +456,14 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         umabanTaijuTable[key] = oneWinPoint.umaTaiju;
     });
-    var umaTaijuStandardTable = funcStandardZeroToOne(umabanTaijuTable);
+    var umaTaijuStandardTable = funcStandard1to2(umabanTaijuTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var umaTaijuStandard = umaTaijuStandardTable[key];
         oneWinPoint["umaTaijuStd"] = umaTaijuStandard.toFixed(2);
     });
 
-    
-    //体重増減を標準化します
-    // var umabanTaijuZougenTable = {};
-    // keys.forEach(key => {
-    //     var oneWinPoint = winPointTable[key];
-    //     umabanTaijuZougenTable[key] = oneWinPoint.umaTaijuZougen;
-    // });
-    // var umaTaijuZougenStandardTable = funcStandardZeroToOne(umabanTaijuZougenTable);
-    // keys.forEach(key => {
-    //     var oneWinPoint = winPointTable[key];
-    //     var umaTaijuZougenStandard = umaTaijuZougenStandardTable[key];
-    //     oneWinPoint["umaTaijuZougenStd"] = umaTaijuZougenStandard.toFixed(2);
-    // });
-    //体重増減標準化 バージョン2
+    //体重増減標準化 他の標準化と異なり、専用の値を使用する事
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var age = oneWinPoint.age;
@@ -600,24 +477,26 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         umabanPrevTimeTable[key] = oneWinPoint.prevTime;
     });
-    var prevTimeStandardTable = funcStandardZeroToOne(umabanPrevTimeTable);
+    var prevTimeStandardTable = funcStandard1to2(umabanPrevTimeTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var prevTimeStandard = prevTimeStandardTable[key];
         oneWinPoint["prevTimeStandard"] = prevTimeStandard.toFixed(3);
     });
+
     //平均タイムを標準化
     var umabanAvgTimeTable = {};
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         umabanAvgTimeTable[key] = oneWinPoint.avgTime;
     });
-    var avgTimeStandardTable = funcStandardZeroToOne(umabanAvgTimeTable);
+    var avgTimeStandardTable = funcStandard1to2(umabanAvgTimeTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var avgTimeStandard = avgTimeStandardTable[key];
         oneWinPoint["avgTimeStandard"] = avgTimeStandard.toFixed(2);
     });
+
     //勝ち方ポイントを標準化。低いほどよい。一着はマイナスの値が入っている。値を計算する前に-1をかけて+-を逆転させてください。
     var katikataPointAvgTable = {};
 
@@ -625,7 +504,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         katikataPointAvgTable[key] = oneWinPoint.katikataPointAvg * -1;         
     });
-    var katikataPointStandardTable = funcStandardZeroToOne(katikataPointAvgTable);
+    var katikataPointStandardTable = funcStandard1to2(katikataPointAvgTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var katikataPointStg = katikataPointStandardTable[key];
@@ -634,20 +513,21 @@ var makeUmahashiraData = function(){
         }
         oneWinPoint["katikataPointStg"] = katikataPointStg.toFixed(2);
     });
+
     //コース適性2の標準化。+-がありますが、離れているほど不利なので、絶対値にした後-1して計算してください。
     var courseTekisei2AvgTable = {};
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         courseTekisei2AvgTable[key] =　Math.abs(oneWinPoint.courseTekisei2Avg) * -1;
     });
-    // console.log(courseTekisei2AvgTable);
-    var courseTekisei2StdTable = funcStandardZeroToOne(courseTekisei2AvgTable);
+    var courseTekisei2StdTable = funcStandard1to2(courseTekisei2AvgTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var courseTekisei2Std = courseTekisei2StdTable[key];
 
         oneWinPoint["courseTekisei2Std"] = (isNaN(courseTekisei2Std)) ? 0 : courseTekisei2Std.toFixed(2);
     });
+
     //上位入賞ポイントを標準化する
     var topPrizePointAvgTable = {};
     keys.forEach(umaban => {
@@ -660,7 +540,7 @@ var makeUmahashiraData = function(){
         var topPrizeAvg = topPrizeSum / topPrizeList.length;
         topPrizePointAvgTable[umaban] = topPrizeAvg;
     });
-    var topPrizePointTable = funcStandardZeroToOne(topPrizePointAvgTable);
+    var topPrizePointTable = funcStandard1to2(topPrizePointAvgTable);
     keys.forEach(umaban => {
         var oneWinPoint = winPointTable[umaban];
         var topPrizePointStd = topPrizePointTable[umaban];
@@ -668,34 +548,8 @@ var makeUmahashiraData = function(){
         oneWinPoint["topPrizePointStd"] = isNaN(topPrizePointStd) ? 0 : topPrizePointStd.toFixed(2);
     });
 
-    //同一ページ上の情報の取得はここまで。
-    //ここからは別ページの情報を取得する
-    
-    //騎手のURL一覧を取る
-    
-    // var jockeyUrlObjStr = "var jockeyUrlObj = {};";
-    // keys.forEach(umaban =>{
-    //     jockeyUrlObjStr += "jockeyUrlObj[" + umaban + "] = \"" + winPointTable[umaban].jockeyUrl + "\";";
-    // });
-    // console.log(jockeyUrlObjStr);
-
-    //騎手の賞金情報を取得。
-    // var umabanJockeyUrls = [];
-    // var umabanShokin = [];
-    // keys.forEach(umaban =>{
-    //     umabanJockeyUrls.push({ 
-    //         umaban: umaban,
-    //         jockeyUrl: winPointTable[umaban].jockeyUrl
-    //     });
-    // });
-    // //賞金総額の取得が終わった時に呼び出される関数
-    // var getJockeyShokinCallback = function(){
-
-    // };
-    // getJockeyShokinMain(umabanJockeyUrls, 0, umabanShokin,getJockeyShokinCallback);
-
-     //タイム指数を取得するAjax呼び出し。
-    //成功すればコンソール出力
+    //タイム指数を取得するAjax呼び出し。
+    //その後にコンソール出力
     var raceId = getRaceId();
     var rows = [];
     $.ajax('/?pid=speed&id=c' + raceId, {

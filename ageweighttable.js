@@ -175,7 +175,7 @@ var funcAgeWTableOutput = function(){
 // funcAgeWTableOutput();
 
 /**
- * 年齢と馬体重増減を与えると、それっぽい値を返してくれる。
+ * 年齢と馬体重増減を与えると、それっぽい値を返してくれる。0が最小値、1が最大値
  * @param {*} age 年齢
  * @param {*} dhweight 体重増原料
  */
@@ -185,13 +185,13 @@ var getAgeDhWeightStd = function(age, dhweight){
     if(!dhWeightTable){
         return 0;
     }
-    var dhweightKinjiti;//体重増原料近似値
+    var dhweightKinjiti;//体重増減の近似値取得
     var keys = Object.keys(dhWeightTable);
-    // console.log(keys);
+
     keys = keys.sort((x,y) => (x - y));
     // console.log(keys);
     dhweightKinjiti = keys[0];
-    //体重増原料の値が近いものを取り出す
+    //体重増減の値の近似値を取り出す
     keys.forEach(dhWeightKey => {
         // var dhWeightStd = dhWeightTable[dhWeightKey];
         var abs1 = Math.abs(dhweight - dhweightKinjiti);
@@ -203,28 +203,3 @@ var getAgeDhWeightStd = function(age, dhweight){
     //体重増原料の近似値が取れたので、その体重増原料の標準化値を取得する。
     return dhWeightTable[dhweightKinjiti];
 };
-
-// function getClosestNum(num, ar){
-//     //近似値を保持しておく変数
-//     var closest;
-//     //配列かどうか、要素があるか判定
-//     if(Object.prototype.toString.call(ar) ==='[object Array]' && ar.length>0){
-//       //まず配列の最初の要素を近似値として保持する
-//       closest = ar[0];
-//       //配列の要素を順次比較していく
-//       for(var i=0;i<ar.length;i++){ 
-//          //この時点での近似値と、指定値の差異を絶対値で保持しておく
-//          var closestDiff = Math.abs(num - closest);
-//          //読み込んだ値と比較し、差異を絶対値で保持しておく
-//          var currentDiff = Math.abs(num - ar[i]);
-//          //新しく比較した値のほうが近かったら、近似値として保持しておく
-//          if(currentDiff < closestDiff){
-//              closest = ar[i];
-//          }
-//        }
-//       //ループが終わったら、近似値を返す
-//        return closest;
-//      }
-//   //配列じゃなかったらfalse
-//   return false;
-//  }
