@@ -1,0 +1,21 @@
+{
+    "manifest_version": 2,
+    "name": "netkeiba_feature_assist",
+    "description": "netkeiba で馬の相対的特徴を表示するツール",
+    "version": "1.0",
+    "content_scripts": [
+        {
+            "matches": ["https://race.netkeiba.com/*","https://nar.netkeiba.com/*" ],
+            "js": ["./lib/jquery-3.4.1.js","./ageweighttable.js","./makeTopPrizePointList.js","./getJockyShokin.js","./content_scripts.js"],
+            "css": ["content_scripts.css"]
+        }
+    ],
+    "browser_action": {
+        "default_icon": "images/icon.png",
+        "default_title": "netkeiba_feature_assist"
+    },
+    "permissions": [
+        "https://race.netkeiba.com/*",
+        "https://nar.netkeiba.com/*"
+    ]
+}
