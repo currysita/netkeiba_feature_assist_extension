@@ -8,6 +8,7 @@
             "matches": ["https://race.netkeiba.com/*","https://nar.netkeiba.com/*" ],
             "js": [
                 "./lib/jquery-3.4.1.js"
+                ,"./raceTrackIdTable.js"
                 ,"./ageweighttable.js"
                 ,"./standard.js"
                 ,"./makeTopPrizePointList.js"

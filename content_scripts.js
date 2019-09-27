@@ -101,7 +101,12 @@ var funcSum = function(targetTable){
 var makeUmahashiraData = function(){
     //レース情報
     var raceData = $('dl.racedata');
-    
+    //レースID
+    var raceId = getRaceId();
+    //レースIDから競馬場IDと競馬場名を取得
+    var raceTrackId = getRaceTrackId(raceId);
+    var raceTrackName = raceTrackTable[raceTrackId];
+
     var currentDistance = 0;
     
     if(raceData.find("dd p span").length > 0){ //地方競馬の場合
@@ -200,6 +205,8 @@ var makeUmahashiraData = function(){
         var prevDistance = null;
         //上がり3ハロン
         var agari3Haron = null;
+        //今回以上の距離を何回走ってるか
+        var runCountFromDistanc = 0;
         //コース適性算出オブジェクト
         var courseTekiseiObjList = [];
         //勝利の強さ。2着以内で、着差の秒が-0.2以上をカウントする
@@ -256,6 +263,10 @@ var makeUmahashiraData = function(){
                             //勝ち方ポイントリストに追加。2着以内、着差-0.2以上
                             if(hashiraOrder <= 2 && tyakusa <= 0.2){
                                 katikataPointList.push(tyakusa);
+                            }
+                            //今回以上の距離で何度走った事があるか
+                            if(hashiraDistance >= currentDistance){
+                                runCountFromDistanc++;
                             }
                         }
                     }
@@ -355,6 +366,7 @@ var makeUmahashiraData = function(){
         tmp["prevTime"] = (prevTime === null) ? 0 : prevTime;
         tmp["avgTime"] = avgTime;
         tmp["katikataPointAvg"] = katikataPointAvg;
+        tmp["runCountFromDistanc"] = runCountFromDistanc;
         winPointTable[umaban] = tmp;
     };
 
@@ -550,7 +562,6 @@ var makeUmahashiraData = function(){
 
     //タイム指数を取得するAjax呼び出し。
     //その後にコンソール出力
-    var raceId = getRaceId();
     var rows = [];
     $.ajax('/?pid=speed&id=c' + raceId, {
         timeout : 1000, // 1000 ms
@@ -579,6 +590,14 @@ var getRaceId = function(){
         }
     }
     return raceId;
+};
+
+/**
+ * レースIDから競馬場IDを取得する
+ */
+var getRaceTrackId = function(raceId){
+    var tmpRaceTrackId = raceId.substring(4,2);
+    return tmpRaceTrackId;
 };
 
 /**
@@ -615,6 +634,7 @@ var consoleOutput = function(winPointTable,timeScoreTable){
         + "直前タイム標準化\t" 
         // + "平均タイム標準化" +
         + "勝ち方ポイント\t"
+        + "同一以上距離走行回\t"
         + "馬番(T側)\t"
         + "T指数\t"
         + "T指数標"
@@ -646,6 +666,7 @@ var consoleOutput = function(winPointTable,timeScoreTable){
         tmp += winPointData.prevTime + "\t";
         tmp += winPointData.prevTimeStandard + "\t";
         tmp += winPointData.katikataPointStg + "\t";
+        tmp += winPointData.runCountFromDistanc + "\t";
         tmp += timeScoreObj.umaban + "\t";
         tmp += timeScoreObj.speed + "\t";
         tmp += timeScoreObj.SpeedStandard;
