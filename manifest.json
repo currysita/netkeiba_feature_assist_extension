@@ -9,6 +9,7 @@
             "js": [
                 "./lib/jquery-3.4.1.js"
                 ,"./raceTrackIdTable.js"
+                ,"./JockeyWinPer.js"
                 ,"./ageweighttable.js"
                 ,"./standard.js"
                 ,"./makeTopPrizePointList.js"

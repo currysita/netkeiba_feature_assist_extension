@@ -38,10 +38,10 @@ var funcStandard0To1 = function(targetTable){
 
 
 //標準化します。引数に馬番をキーとした値を入れる事
-//最小値1、最大値2
-var funcStandard1to2 = function(targetTable){
-    var from = 1;
-    var to = 2;
+//最小値0.1、最大値1
+var funcStandard01to2 = function(targetTable){
+    var from = 0.01;
+    var to = 1;
     var keys = Object.keys(targetTable);
     var max = null;
     var min = null;

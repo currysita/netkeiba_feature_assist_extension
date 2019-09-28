@@ -1,5 +1,6 @@
 /// <reference path="./ageweighttable.js" />
 /// <reference path="./standard.js" />
+/// <reference path="./JockeyWinPer.js" />
 
 /**
  * タイム指数を取る。
@@ -47,7 +48,7 @@ var funcTimeScore = function(rows){
     keys.forEach(key => {
         umabanSpeedTable[key] = speedObjectLit[key].speed;
     });
-    var speedStandardTable = funcStandard1to2(umabanSpeedTable);
+    var speedStandardTable = funcStandard01to2(umabanSpeedTable);
     keys.forEach(key => {
         var currentSpeed = speedStandardTable[key];
         speedObjectLit[key].SpeedStandard = currentSpeed;
@@ -66,7 +67,6 @@ var funcTimeScore = function(rows){
     });
     return timeScoreTable;
 };
-
 
 /**
  * コース適性オブジェクト
@@ -112,11 +112,13 @@ var makeUmahashiraData = function(){
     if(raceData.find("dd p span").length > 0){ //地方競馬の場合
         var courceData = raceData.find("dd p span");
         var courceDataArr = courceData.html().split('&nbsp;')
-        currentDistance = courceDataArr[0].replace(/[^0-9\+\-]/g,"");
+        var distanceTmp = courceDataArr[0].replace(/[^0-9\+\-]/g,"");
+        currentDistance = Number(distanceTmp);
     }else if(raceData.find("dd p").length > 0){//JRAの場合
         var courceData = raceData.find("dd p:first");
         var courceDataArr = courceData.html().split('&nbsp;');
-        currentDistance = courceDataArr[0].replace(/[^0-9\+\-]/g,"");
+        var distanceTmp = courceDataArr[0].replace(/[^0-9\+\-]/g,"");
+        currentDistance = Number(distanceTmp);
     }
 
     //馬情報
@@ -244,7 +246,7 @@ var makeUmahashiraData = function(){
                         var raceInfoArr = raceTimeTmp.split('&nbsp;');
                         if(raceInfoArr && raceInfoArr.length >= 2){
                             //コースの長さ
-                            var hashiraDistance = raceInfoArr[0].replace(/[^0-9]/g,'');
+                            var hashiraDistance = Number(raceInfoArr[0].replace(/[^0-9]/g,''));
                             var minuteStrArr = raceInfoArr[1].split(':');
                             var minute = Number(minuteStrArr[0]);
                             var second = Number(minuteStrArr[1]);
@@ -366,7 +368,8 @@ var makeUmahashiraData = function(){
         tmp["prevTime"] = (prevTime === null) ? 0 : prevTime;
         tmp["avgTime"] = avgTime;
         tmp["katikataPointAvg"] = katikataPointAvg;
-        tmp["runCountFromDistanc"] = runCountFromDistanc;
+        tmp["runCountFromDistanc"] = runCountFromDistanc;//今回のコース以上の距離を何回走ったか
+        tmp["runCountFromDistancAvg"] = runCountFromDistanc / hashiraTds.length;
         winPointTable[umaban] = tmp;
     };
 
@@ -382,7 +385,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         agePointTable[key] = oneWinPoint.agePoint;
     });
-    var agePointStandardTable = funcStandard1to2(agePointTable);
+    var agePointStandardTable = funcStandard01to2(agePointTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var agePointStandard = agePointStandardTable[key];
@@ -397,7 +400,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         haronTable[key] = Number(oneWinPoint.haron) * -1; //低いほど強いので、マイナスの値にする
     });
-    var haronStandardTable = funcStandard1to2(haronTable);
+    var haronStandardTable = funcStandard01to2(haronTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var haronStandard = haronStandardTable[key];
@@ -451,7 +454,7 @@ var makeUmahashiraData = function(){
         }
     });
 
-    var oddsRankStdTable = funcStandard1to2(oddsTableForStd);
+    var oddsRankStdTable = funcStandard01to2(oddsTableForStd);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var oddsRankStd = oddsRankStdTable[key];
@@ -468,7 +471,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         umabanTaijuTable[key] = oneWinPoint.umaTaiju;
     });
-    var umaTaijuStandardTable = funcStandard1to2(umabanTaijuTable);
+    var umaTaijuStandardTable = funcStandard01to2(umabanTaijuTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var umaTaijuStandard = umaTaijuStandardTable[key];
@@ -489,7 +492,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         umabanPrevTimeTable[key] = oneWinPoint.prevTime;
     });
-    var prevTimeStandardTable = funcStandard1to2(umabanPrevTimeTable);
+    var prevTimeStandardTable = funcStandard01to2(umabanPrevTimeTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var prevTimeStandard = prevTimeStandardTable[key];
@@ -502,7 +505,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         umabanAvgTimeTable[key] = oneWinPoint.avgTime;
     });
-    var avgTimeStandardTable = funcStandard1to2(umabanAvgTimeTable);
+    var avgTimeStandardTable = funcStandard01to2(umabanAvgTimeTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var avgTimeStandard = avgTimeStandardTable[key];
@@ -516,7 +519,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         katikataPointAvgTable[key] = oneWinPoint.katikataPointAvg * -1;         
     });
-    var katikataPointStandardTable = funcStandard1to2(katikataPointAvgTable);
+    var katikataPointStandardTable = funcStandard01to2(katikataPointAvgTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var katikataPointStg = katikataPointStandardTable[key];
@@ -532,7 +535,7 @@ var makeUmahashiraData = function(){
         var oneWinPoint = winPointTable[key];
         courseTekisei2AvgTable[key] =　Math.abs(oneWinPoint.courseTekisei2Avg) * -1;
     });
-    var courseTekisei2StdTable = funcStandard1to2(courseTekisei2AvgTable);
+    var courseTekisei2StdTable = funcStandard01to2(courseTekisei2AvgTable);
     keys.forEach(key => {
         var oneWinPoint = winPointTable[key];
         var courseTekisei2Std = courseTekisei2StdTable[key];
@@ -552,7 +555,7 @@ var makeUmahashiraData = function(){
         var topPrizeAvg = topPrizeSum / topPrizeList.length;
         topPrizePointAvgTable[umaban] = topPrizeAvg;
     });
-    var topPrizePointTable = funcStandard1to2(topPrizePointAvgTable);
+    var topPrizePointTable = funcStandard01to2(topPrizePointAvgTable);
     keys.forEach(umaban => {
         var oneWinPoint = winPointTable[umaban];
         var topPrizePointStd = topPrizePointTable[umaban];
@@ -562,6 +565,19 @@ var makeUmahashiraData = function(){
 
     //タイム指数を取得するAjax呼び出し。
     //その後にコンソール出力
+    var funcJockeyWinPerAjax = function(raceId,timeScoreTable){
+        $.ajax('/?pid=data&id=c' + raceId + '&mode=top', {
+            timeout : 1000, // 1000 ms
+            datatype:'html',
+            async: true
+        }).then(function(data){
+            var jockeyWinPerTable = funcJockeyWinPer(data);
+            console.log("戻り値" + jockeyWinPerTable);
+            //標準化
+            var jockeyWinPerStdTable = funcStandard01to2(jockeyWinPerTable);
+            consoleOutput(winPointTable, timeScoreTable,jockeyWinPerStdTable);
+        });
+    };
     var rows = [];
     $.ajax('/?pid=speed&id=c' + raceId, {
         timeout : 1000, // 1000 ms
@@ -570,7 +586,11 @@ var makeUmahashiraData = function(){
     }).then(function(data){
         rows = $(data).find('table.race_table_01 tr');
         var timeScoreTable = funcTimeScore(rows);
-        consoleOutput(winPointTable, timeScoreTable);
+        funcJockeyWinPerAjax(raceId, timeScoreTable);
+        // var callback2 = consoleOutput(winPointTable, timeScoreTable);
+        // var jockeyWinPObj = new JockeyWinPer(raceId,winPointTable, timeScoreTable,consoleOutput)
+        // jockeyWinPObj.requestAjax();
+
     });
     
     
@@ -603,7 +623,7 @@ var getRaceTrackId = function(raceId){
 /**
  * 取得した情報をまとめてコンソールに表示する
  */
-var consoleOutput = function(winPointTable,timeScoreTable){
+var consoleOutput = function(winPointTable,timeScoreTable,jockeyWinPerStdTable){
 
     var logStr = "";
     //タイトル文字列
@@ -634,16 +654,18 @@ var consoleOutput = function(winPointTable,timeScoreTable){
         + "直前タイム標準化\t" 
         // + "平均タイム標準化" +
         + "勝ち方ポイント\t"
-        + "同一以上距離走行回\t"
+        + "より長い距離の割合\t"
         + "馬番(T側)\t"
         + "T指数\t"
-        + "T指数標"
+        + "T指数標\t"
+        + "騎手複勝率標準"
         + "\n";
     $.each(winPointTable,function(idx,winPointData){
         if(!winPointData.odds){
             return;
         }
         var timeScoreObj = timeScoreTable[winPointData.umaban];
+        var jockeyWinPerStd = jockeyWinPerStdTable[winPointData.umaban];//騎手ごとの複勝率の正規化
         var tmp = "";
         tmp += winPointData.umaban + "\t";
         tmp += winPointData.umaName + "\t";
@@ -666,10 +688,12 @@ var consoleOutput = function(winPointTable,timeScoreTable){
         tmp += winPointData.prevTime + "\t";
         tmp += winPointData.prevTimeStandard + "\t";
         tmp += winPointData.katikataPointStg + "\t";
-        tmp += winPointData.runCountFromDistanc + "\t";
+        // tmp += winPointData.runCountFromDistanc + "\t";
+        tmp += winPointData.runCountFromDistancAvg + "\t";
         tmp += timeScoreObj.umaban + "\t";
         tmp += timeScoreObj.speed + "\t";
-        tmp += timeScoreObj.SpeedStandard;
+        tmp += timeScoreObj.SpeedStandard + "\t";
+        tmp += jockeyWinPerStd;
 
         tmp += "\n";
         logStr += tmp;
